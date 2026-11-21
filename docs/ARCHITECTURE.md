@@ -382,3 +382,88 @@ class IMessageBridge(Protocol):
 This ensures that:
 - Automated test suites can mock `IMessageBridge` completely to test multi-round debate logic without launching desktop windows.
 - Future authorized accessibility or API integrations can be swapped into the Integration Layer without modifying the reasoning, debate, or consensus algorithms.
+
+---
+
+## 7. Phase 2A Unified UI Architecture & Component Hierarchy
+
+Phase 2A delivers the permanent, unified desktop workspace interface built with PySide6, designed around modern developer/research tools and premium dark minimalism.
+
+### UI Component Hierarchy
+
+```text
+MainWindow (QMainWindow)
+├── HeaderWidget (QHBoxLayout)
+│   ├── AppTitleLabel ("TRIAD — Local AI Consensus Workspace")
+│   ├── HeaderSessionLabel (Active session reference & title or prompt guidance)
+│   ├── HeaderModeBadge (Current reasoning mode indicator)
+│   ├── StatusSummaryBadge (Bounded application count e.g. "2/3 Applications Bound")
+│   └── SettingsQuickButton (Direct shortcut to SettingsPage)
+├── BodyWidget (QHBoxLayout)
+│   ├── Sidebar (Collapsible 230px ↔ 64px navigation)
+│   │   ├── Brand & Collapse Toggle ("«" / "»")
+│   │   ├── Section: WORKSPACE (New Discussion, All Sessions)
+│   │   ├── Section: REASONING MODES (Quick Consensus, Deep Debate, Research, Code Review, Creative)
+│   │   ├── Section: HISTORY (Recent Sessions, Search Sessions)
+│   │   └── Section: SYSTEM (Agent Connections, Disagreement Map, Settings)
+│   └── QStackedWidget (Page index switching)
+│       ├── Page 0: WorkspacePage (QScrollArea container)
+│       │   ├── PromptComposer (Title, multiline question, mode selector, max rounds, validation, draft clearing)
+│       │   ├── Three AgentPanels (ChatGPT, Claude, Gemini)
+│       │   │   ├── Accent line & Model Name
+│       │   │   ├── Connection status pill (MISSING, DETECTED, BOUND, STALE)
+│       │   │   ├── Response status pill (NOT REQUESTED, AWAITING IMPORT, IMPORTED, ERROR)
+│       │   │   ├── Window Telemetry (Process PID, HWND, Title)
+│       │   │   ├── Focus Application button (Calls WindowManager.focus_window)
+│       │   │   ├── Response text area (Read-only, monospace preview)
+│       │   │   └── Expand/Collapse toggle button
+│       │   ├── DiscussionTimeline (Deterministic chronological event logging)
+│       │   │   ├── Event Type Badges (CREATED, MODE, CONFIG, AGENT, REOPENED, RENAMED)
+│       │   │   ├── Event timestamp & participant metadata
+│       │   │   └── Informative empty state
+│       │   └── ConsensusPanel (Permanent space for future consensus engine)
+│       │       ├── Status banner ("Consensus becomes available after discussion and voting are implemented")
+│       │       ├── Planned consensus metrics visual layout (Unanimous 3/3, Majority 2/3, Minority Report)
+│       │       └── Disabled future action buttons
+│       ├── Page 1: SessionListPage
+│       │   ├── Search bar (Live filtering by title or question substring)
+│       │   ├── Sessions table (Title, Mode, State, Rounds, Created, Updated)
+│       │   └── Action buttons (Open Session, Rename..., Delete Session with confirmation)
+│       ├── Page 2: ConnectionsPage
+│       │   ├── Action header (Scan Desktop Applications button)
+│       │   ├── 3 AgentCards (Connect, Focus, Disconnect, WindowPickerDialog)
+│       │   └── Discovery & Connection Audit Log table
+│       ├── Page 3: DisagreementPage
+│       │   ├── Empty state explaining future cross-model debate claim mapping
+│       │   └── Planned claim-by-claim conflict matrix preview table
+│       └── Page 4: SettingsPage
+│           ├── Connection Monitor polling interval
+│           ├── Default reasoning mode & max rounds configuration
+│           └── SQLite persistent database path display
+└── StatusBarWidget (QHBoxLayout)
+    ├── Local Workspace • Zero Paid APIs • Win32 Window Management
+    └── Real-time Bound Applications count
+```
+
+### Color Token System
+- **Background**: `#0B0F14`
+- **Sidebar**: `#111720`
+- **Primary Surfaces**: `#161D27`
+- **Elevated Surfaces**: `#1D2633`
+- **Borders**: `#2B3543`
+- **Text Primary**: `#EDF2F7`
+- **Text Secondary**: `#94A3B8`
+- **Accents**:
+  - ChatGPT: `#10A37F`
+  - Claude: `#D97757`
+  - Gemini: `#4285F4`
+  - Consensus: `#22C55E`
+  - Warning: `#F59E0B`
+  - Error: `#EF4444`
+
+### Extension Points for Phase 2B
+- `AgentPanel.copy_focus_requested = Signal(str)`: Initiates clipboard staging and brings target window to foreground.
+- `AgentPanel.import_requested = Signal(str)`: Opens ResponseImportDialog to paste and verify SHA-256 integrity.
+- `AgentPanel.set_response(ModelResponse)`: Updates panel with imported response, word count, and SHA-256 hash.
+- `DiscussionTimeline.add_event(TimelineEvent)`: Appends newly completed response imports to chronological history.
+

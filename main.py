@@ -4,8 +4,10 @@ from PySide6.QtWidgets import QApplication
 from app.core.agent_registry import AgentRegistry
 from app.core.app_discovery import AppDiscoveryService
 from app.core.message_bridge import MessageExchangeBridge
+from app.core.session_manager import SessionManager
 from app.core.window_manager import WindowManager
 from app.storage.database import DatabaseManager
+from app.storage.session_repository import SessionRepository
 from app.ui.main_window import MainWindow
 from app.utils.logging import get_logger, setup_logging
 
@@ -14,10 +16,12 @@ def main() -> int:
     """Entry point for the TRIAD Desktop Workspace."""
     setup_logging()
     logger = get_logger("main")
-    logger.info("Initializing TRIAD Desktop Workspace (Phase 1 & 2)...")
+    logger.info("Initializing TRIAD Desktop Workspace (Phase 1 & Phase 2A)...")
 
     # Initialize Core Subsystems
     database = DatabaseManager()
+    session_repo = SessionRepository(db=database)
+    session_manager = SessionManager(repository=session_repo)
     registry = AgentRegistry()
     discovery = AppDiscoveryService()
     window_manager = WindowManager()
@@ -38,6 +42,7 @@ def main() -> int:
         window_manager=window_manager,
         database=database,
         message_bridge=message_bridge,
+        session_manager=session_manager,
     )
     window.show()
 

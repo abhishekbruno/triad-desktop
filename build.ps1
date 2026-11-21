@@ -33,6 +33,8 @@ Write-Host "[3/4] Running PyInstaller..." -ForegroundColor Yellow
     --onedir `
     --windowed `
     --add-data="app/ui/styles.qss;app/ui" `
+    --add-data="app/ui/styles/theme.qss;app/ui/styles" `
+    --hidden-import="sqlite3" `
     --hidden-import="win32gui" `
     --hidden-import="win32process" `
     --hidden-import="win32api" `

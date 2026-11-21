@@ -17,13 +17,16 @@ The test suite is organized under `tests/` and executed with `pytest`:
 ```text
 tests/
 ├── __init__.py
-├── test_discovery.py       # PWA, native, package signatures, and rejection of misleading titles
-├── test_message_bridge.py  # Phase 2: Staging, clipboard copy, focus, response import, SHA-256 hashes
-├── test_window_manager.py  # Window validation, focus restoration, foreground lock handling
-├── test_registry.py        # Lifecycle transitions (MISSING -> DETECTED -> BOUND -> STALE)
-├── test_monitor.py         # Process termination and window closing detection
-├── test_storage.py         # SQLite persistence, preferences, sessions, and responses
-└── test_scenarios.py       # Comprehensive 10-point acceptance scenarios
+├── conftest.py               # Headless offscreen Qt fixture
+├── test_discovery.py          # PWA, native, package signatures, and rejection of misleading titles
+├── test_message_bridge.py     # Phase 2B: Staging, clipboard copy, focus, response import, SHA-256 hashes
+├── test_window_manager.py     # Window validation, focus restoration, foreground lock handling
+├── test_registry.py           # Lifecycle transitions (MISSING -> DETECTED -> BOUND -> STALE)
+├── test_monitor.py            # Process termination and window closing detection
+├── test_storage.py            # SQLite persistence, preferences, sessions, and responses
+├── test_session_management.py # Phase 2A: SessionRepository, SessionManager, SQLite migration v3
+├── test_ui_phase2a.py         # Phase 2A: 20-point UI verification suite
+└── test_scenarios.py          # Comprehensive 10-point acceptance scenarios
 ```
 
 ### Execution Command
@@ -32,10 +35,10 @@ tests/
 ```
 
 ### Automated Test Results
-- **Collected**: 46
-- **Passed**: 46
+- **Collected**: 71
+- **Passed**: 71
 - **Failed**: 0
-- **Execution Time**: ~1.04 seconds
+- **Execution Time**: ~3.44 seconds
 
 ```text
 tests/test_discovery.py (5/5 passed)
@@ -43,10 +46,34 @@ tests/test_message_bridge.py (17/17 passed)
 tests/test_monitor.py (2/2 passed)
 tests/test_registry.py (4/4 passed)
 tests/test_scenarios.py (10/10 passed)
+tests/test_session_management.py (6/6 passed)
 tests/test_storage.py (4/4 passed)
+tests/test_ui_phase2a.py (19/19 passed)
 tests/test_window_manager.py (4/4 passed)
-============================== 46 passed in 1.04s ==============================
+============================== 71 passed in 3.44s ==============================
 ```
+
+### Phase 2A Test Suite Coverage (20 Verifications)
+1. **Main workspace initialization**: Validates MainWindow layout, header, collapsible sidebar, 5 stacked pages, and 3 participant panels.
+2. **Sidebar navigation**: Tests active page switching across Workspace, Sessions, Connections, Disagreement, and Settings.
+3. **Sidebar collapse**: Verifies smooth transition between 230px full view and 64px compact icon view with tooltips.
+4. **Session creation**: Validates title and prompt entry from composer, creating persistent entity in SQLite.
+5. **Session persistence**: Confirms storage of session metadata in `reasoning_sessions` table.
+6. **Session reopening**: Ensures saved sessions restore prompt content, mode, and emit `SESSION_REOPENED` event.
+7. **Session renaming**: Verifies title update in storage, manager state, and timeline event logging.
+8. **Session deletion**: Ensures complete cascade deletion with confirmation and state clearing.
+9. **Session search**: Validates substring search across both title and question content.
+10. **Reasoning mode configuration**: Verifies mode updates via sidebar and composer dropdown.
+11. **Agent connection status binding**: Tests status badge transitions (MISSING, DETECTED, BOUND, STALE).
+12. **Focus button behavior**: Validates invocation of `WindowManager.focus_window()` and invalid handle feedback.
+13. **Missing application handling**: Verifies missing state (e.g. Gemini), disabled focus button, and non-detected labels.
+14. **Timeline event ordering**: Enforces strict deterministic chronological timestamp ordering.
+15. **Empty discussion states**: Validates clean empty state when no events exist.
+16. **Disabled future consensus actions**: Verifies ballot buttons remain disabled with Phase 4 tooltips.
+17. **UI responsiveness during scans**: Verifies non-blocking single-shot execution of desktop discovery scans.
+18. **Existing database migration**: Verifies forward-only schema migration version 3 creating `session_timeline_events`.
+19. **Application restart**: Confirms sessions and preferences survive process termination and recreation.
+20. **Invalid stored session handling**: Ensures graceful fallback when nonexistent session IDs are requested.
 tests/test_discovery.py::test_classify_native_claude PASSED              [  6%]
 tests/test_discovery.py::test_classify_gemini_pwa_mode PASSED            [ 10%]
 tests/test_discovery.py::test_reject_unrelated_process_with_misleading_title PASSED [ 13%]

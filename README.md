@@ -57,22 +57,56 @@ For comprehensive architectural specifications, see [docs/ARCHITECTURE.md](docs/
 
 ---
 
-## Current Status: Phase 1 & Phase 2 Operational
+## Current Status: Phase 1 & Phase 2A Operational
 
 TRIAD is built under a strict phased gating model:
 
 | Phase | Description | Status |
 |---|---|---|
 | **Phase 1** | **Native Desktop Application Discovery & Focus** | **COMPLETED & OPERATIONAL** |
-| **Phase 2** | **User-Controlled Message Exchange Bridge** | **COMPLETED & OPERATIONAL** |
-| **Phase 3** | Reasoning Session & Cross-Model Debate Engine | Planned (Next) |
+| **Phase 2A** | **Complete Unified Desktop Workspace UI & Persistence** | **COMPLETED & OPERATIONAL** |
+| **Phase 2B** | **User-Controlled Message Exchange Bridge** | Planned (Next) |
+| **Phase 3** | Reasoning Session & Cross-Model Debate Engine | Planned |
 | **Phase 4** | Deterministic Consensus & Disagreement Mapping | Planned |
 | **Phase 5** | Shared Memory, Session Replay & Export | Planned |
 | **Phase 6** | Production Hardening, Packaging & CI Matrix | Planned |
 
-> **Current Operational Capabilities**: Discovers, registers, monitors, and focuses existing ChatGPT, Claude, and Gemini desktop windows (Phase 1), and provides an isolated, user-controlled Message Exchange Bridge to stage prompts, copy & focus, import responses with SHA-256 verification, and track Round 1 completion (Phase 2).
+> **Current Operational Capabilities**: Discovers, registers, monitors, and focuses existing ChatGPT, Claude, and Gemini desktop windows (Phase 1), and provides a production-grade unified desktop workspace featuring a collapsible navigation sidebar, multiline prompt composer, 3 participant panels, discussion timeline, consensus/disagreement empty states, and local SQLite session persistence (Phase 2A).
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete multi-phase development plan.
+
+---
+
+## Workspace Layout & Interface
+
+```text
+┌──────────────────────────────────────────────────────────────────────────┐
+│ TRIAD — Local AI Consensus Workspace    MODE: DEEP DEBATE     SETTINGS  │
+├──────────────┬───────────────────────────────────────────────────────────┤
+│              │                                                           │
+│ WORKSPACE    │  NEW REASONING SESSION                                    │
+│              │  ┌─────────────────────────────────────────────────────┐  │
+│ + New Chat   │  │ Title: Distributed Architecture Consensus           │  │
+│ Sessions     │  │ Prompt: Compare event-driven vs sync transactions...│  │
+│              │  └─────────────────────────────────────────────────────┘  │
+│ REASONING    │  [Create Session]                    [Max Rounds: 3]      │
+│ • Quick      │                                                           │
+│ • Deep       │  AI PARTICIPANTS                                          │
+│ • Research   │  ┌──────────────┬──────────────┬────────────────┐         │
+│ • Code       │  │   ChatGPT    │    Claude    │    Gemini      │         │
+│ • Creative   │  │  Connected   │  Connected   │ Not Connected  │         │
+│              │  │  [Focus App] │  [Focus App] │ [Not Detected] │         │
+│ SYSTEM       │  └──────────────┴──────────────┴────────────────┘         │
+│ • Connect    │                                                           │
+│ • Disagree   │  SHARED DISCUSSION TIMELINE            CONSENSUS ENGINE   │
+│ • Settings   │  ┌─────────────────────────────┐  ┌─────────────────────┐ │
+│              │  │ [CREATED] Session initiated │  │ Future Phase 4:     │ │
+│              │  │ [MODE] Deep Debate active   │  │ 3/3 Unanimous       │ │
+│              │  └─────────────────────────────┘  └─────────────────────┘ │
+├──────────────┴───────────────────────────────────────────────────────────┤
+│ Local Workspace              2/3 Apps Bound          Connection Status  │
+└──────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -80,7 +114,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete multi-phase development 
 
 Detailed technical design specifications are available in the `docs/` directory:
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Four-tier architecture, 14 architectural modules (MOD-01 through MOD-14), module dependencies, and security boundaries.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Four-tier architecture, 14 architectural modules (MOD-01 through MOD-14), module dependencies, and Phase 2A UI hierarchy.
 - [docs/MESSAGE_EXCHANGE.md](docs/MESSAGE_EXCHANGE.md): Message exchange protocol, clipboard handoff, SHA-256 verification, and complete Round 1 workflow.
 - [docs/CONSENSUS_PROTOCOL.md](docs/CONSENSUS_PROTOCOL.md): Mathematical voting calculus, structured ballot schema, Devil's Advocate rules, and Minority Report protocols.
 - [docs/DATA_MODEL.md](docs/DATA_MODEL.md): Relational SQLite schema, Entity-Relationship diagram, migrations, and JSON export specifications.
@@ -96,8 +130,8 @@ Detailed technical design specifications are available in the `docs/` directory:
 - **GUI Framework**: PySide6 (Qt 6)
 - **Windows APIs**: `pywin32` (`win32gui`, `win32process`, `win32api`, `win32con`)
 - **Process Inspection**: `psutil`
-- **Persistence**: SQLite 3 (Python standard library)
-- **Testing**: `pytest`, `pytest-mock` (46 automated unit, scenario, and bridge tests)
+- **Persistence**: SQLite 3 (versioned migrations v1, v2, v3)
+- **Testing**: `pytest`, `pytest-mock` (71 automated unit, scenario, persistence, and UI tests)
 - **Packaging**: `pyinstaller` (Windows standalone binary)
 
 ---

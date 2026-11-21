@@ -154,6 +154,29 @@ class DatabaseManager:
                 """,
                 (datetime.now(timezone.utc).isoformat(),),
             )
+
+            # Phase 2A: Session timeline events
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS session_timeline_events (
+                    event_id TEXT PRIMARY KEY,
+                    session_id TEXT NOT NULL REFERENCES reasoning_sessions(session_id) ON DELETE CASCADE,
+                    event_type TEXT NOT NULL,
+                    participant TEXT,
+                    timestamp TIMESTAMP NOT NULL,
+                    content TEXT,
+                    status TEXT DEFAULT 'logged'
+                )
+                """
+            )
+
+            cursor.execute(
+                """
+                INSERT OR IGNORE INTO schema_migrations (version, applied_at, description)
+                VALUES (3, ?, 'Phase 2A: session_timeline_events table for discussion lifecycle')
+                """,
+                (datetime.now(timezone.utc).isoformat(),),
+            )
             conn.commit()
             logger.info("Database initialized at %s", self.db_path)
 
@@ -485,3 +508,121 @@ class DatabaseManager:
             if row:
                 return dict(row)
             return None
+
+    # -------------------------------------------------------------------------
+    # Phase 2A: Session Lifecycle & Timeline Events
+    # -------------------------------------------------------------------------
+
+    def rename_reasoning_session(self, session_id: str, new_title: str) -> bool:
+        """Renames an existing session."""
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                UPDATE reasoning_sessions
+                SET title = ?, updated_at = ?
+                WHERE session_id = ?
+                """,
+                (new_title.strip(), now, session_id),
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def delete_reasoning_session(self, session_id: str) -> bool:
+        """Permanently removes a reasoning session and its cascades."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            # Explicit delete of child records for SQLite integrity
+            cursor.execute("DELETE FROM session_timeline_events WHERE session_id = ?", (session_id,))
+            cursor.execute("DELETE FROM session_responses WHERE session_id = ?", (session_id,))
+            cursor.execute("DELETE FROM session_prompts WHERE session_id = ?", (session_id,))
+            cursor.execute("DELETE FROM reasoning_sessions WHERE session_id = ?", (session_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def update_reasoning_session_mode(self, session_id: str, mode: str) -> bool:
+        """Updates the reasoning mode for an active session."""
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                UPDATE reasoning_sessions
+                SET mode = ?, updated_at = ?
+                WHERE session_id = ?
+                """,
+                (mode, now, session_id),
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def update_reasoning_session_rounds(self, session_id: str, max_rounds: int) -> bool:
+        """Updates the maximum rounds for an active session."""
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                UPDATE reasoning_sessions
+                SET max_rounds = ?, updated_at = ?
+                WHERE session_id = ?
+                """,
+                (max_rounds, now, session_id),
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def search_reasoning_sessions(self, query: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """Searches reasoning sessions by matching title or question content."""
+        pattern = f"%{query.strip()}%"
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT * FROM reasoning_sessions
+                WHERE title LIKE ? OR initial_question LIKE ?
+                ORDER BY updated_at DESC LIMIT ?
+                """,
+                (pattern, pattern, limit),
+            )
+            return [dict(row) for row in cursor.fetchall()]
+
+    def add_timeline_event(
+        self,
+        event_id: str,
+        session_id: str,
+        event_type: str,
+        timestamp: Optional[str] = None,
+        participant: Optional[str] = None,
+        content: Optional[str] = None,
+        status: str = "logged",
+    ) -> None:
+        """Logs a persistent discussion timeline event."""
+        if not timestamp:
+            timestamp = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO session_timeline_events (
+                    event_id, session_id, event_type, participant, timestamp, content, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (event_id, session_id, event_type, participant, timestamp, content, status),
+            )
+            conn.commit()
+
+    def get_timeline_events(self, session_id: str) -> List[Dict[str, Any]]:
+        """Retrieves timeline events for a session in chronological order."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT * FROM session_timeline_events
+                WHERE session_id = ?
+                ORDER BY timestamp ASC, rowid ASC
+                """,
+                (session_id,),
+            )
+            return [dict(row) for row in cursor.fetchall()]

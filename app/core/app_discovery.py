@@ -238,3 +238,5 @@ class AppDiscoveryService:
 
         return grouped
 
+    scan_all = discover_candidates
+
