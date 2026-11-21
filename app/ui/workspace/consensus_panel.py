@@ -63,8 +63,8 @@ class ConsensusPanel(QFrame):
         banner_layout.addWidget(status_text)
 
         sub_text = QLabel(
-            "When debate concludes, models will cast structured ballots. "
-            "TRIAD calculates mathematical consensus (3/3 unanimous or 2/3 majority) without paid APIs."
+            "When debate concludes, models cast structured ballots. "
+            "TRIAD calculates mathematical consensus (3/3 unanimous or 2/3 majority) locally without paid APIs."
         )
         sub_text.setWordWrap(True)
         sub_text.setStyleSheet("font-size: 10px; color: #94A3B8;")
@@ -72,64 +72,79 @@ class ConsensusPanel(QFrame):
 
         layout.addWidget(empty_banner)
 
-        # 3. Planned Architecture Preview Cards (Disabled / Visual Preview)
-        preview_box = QFrame()
-        preview_box.setStyleSheet("background-color: #0B0F14; border: 1px dashed #2B3543; border-radius: 6px; padding: 10px;")
-        prev_layout = QVBoxLayout(preview_box)
-        prev_layout.setContentsMargins(8, 6, 8, 6)
-        prev_layout.setSpacing(6)
+        # 3. Three Dedicated Future Consensus Module Cards
+        cards_layout = QVBoxLayout()
+        cards_layout.setSpacing(8)
 
-        prev_title = QLabel("PLANNED CONSENSUS METRICS:")
-        prev_title.setStyleSheet("font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 0.5px;")
-        prev_layout.addWidget(prev_title)
-
-        # Metrics rows
-        row1 = QHBoxLayout()
-        row1.addWidget(self._create_metric_pill("Unanimous Verdict", "3/3 Agreement"))
-        row1.addWidget(self._create_metric_pill("Majority Consensus", "2/3 Agreement"))
-        prev_layout.addLayout(row1)
-
-        row2 = QHBoxLayout()
-        row2.addWidget(self._create_metric_pill("Minority Report", "Dissent Tracking"))
-        row2.addWidget(self._create_metric_pill("Human Override", "Audit Preserved"))
-        prev_layout.addLayout(row2)
-
-        layout.addWidget(preview_box)
-
-        # 4. Action Row (Disabled buttons demonstrating future triggers)
-        btn_row = QHBoxLayout()
-        btn_row.setSpacing(8)
-
+        # Card 1: Voting Panel Placeholder
+        card_voting = self._create_module_card(
+            title="1. Voting & Verdict Panel",
+            phase_tag="Phase 4",
+            description="Aggregates individual model ballots into mathematical consensus. Calculates unanimous (3/3) or majority (2/3) verdicts deterministically.",
+        )
         self.btn_cast_ballots = QPushButton("Cast Ballots (Phase 4)")
         self.btn_cast_ballots.setEnabled(False)
         self.btn_cast_ballots.setToolTip("Voting engine will be enabled in Phase 4")
         self.btn_cast_ballots.setStyleSheet(
-            "QPushButton:disabled { background-color: #111720; color: #64748B; border: 1px solid #1D2633; }"
+            "QPushButton:disabled { background-color: #111720; color: #64748B; border: 1px solid #1D2633; font-size: 10px; padding: 4px 8px; }"
         )
-        btn_row.addWidget(self.btn_cast_ballots, 1)
+        card_voting.layout().addWidget(self.btn_cast_ballots)
+        cards_layout.addWidget(card_voting)
 
-        self.btn_view_report = QPushButton("Export Decision")
+        # Card 2: Disagreement Map Placeholder
+        card_disagreement = self._create_module_card(
+            title="2. Disagreement Map",
+            phase_tag="Phase 3/4",
+            description="Semantic conflict matrix tracing points of departure, contradictory claims, and convergence progression across rounds.",
+        )
+        self.btn_view_disagreement = QPushButton("Explore Conflict Map (Phase 3)")
+        self.btn_view_disagreement.setEnabled(False)
+        self.btn_view_disagreement.setToolTip("Disagreement matrix generation will be enabled in Phase 3")
+        self.btn_view_disagreement.setStyleSheet(
+            "QPushButton:disabled { background-color: #111720; color: #64748B; border: 1px solid #1D2633; font-size: 10px; padding: 4px 8px; }"
+        )
+        card_disagreement.layout().addWidget(self.btn_view_disagreement)
+        cards_layout.addWidget(card_disagreement)
+
+        # Card 3: Minority Report Placeholder
+        card_minority = self._create_module_card(
+            title="3. Minority Report & Dissent",
+            phase_tag="Phase 4",
+            description="Captures dissenting model arguments, identifying hidden risks and nuances when a 2/3 majority split occurs.",
+        )
+        self.btn_view_report = QPushButton("Generate Minority Report (Phase 4)")
         self.btn_view_report.setEnabled(False)
-        self.btn_view_report.setToolTip("Consensus export will be enabled in Phase 4")
+        self.btn_view_report.setToolTip("Minority report generation will be enabled in Phase 4")
         self.btn_view_report.setStyleSheet(
-            "QPushButton:disabled { background-color: #111720; color: #64748B; border: 1px solid #1D2633; }"
+            "QPushButton:disabled { background-color: #111720; color: #64748B; border: 1px solid #1D2633; font-size: 10px; padding: 4px 8px; }"
         )
-        btn_row.addWidget(self.btn_view_report, 1)
+        card_minority.layout().addWidget(self.btn_view_report)
+        cards_layout.addWidget(card_minority)
 
-        layout.addLayout(btn_row)
+        layout.addLayout(cards_layout)
         layout.addStretch()
 
-    def _create_metric_pill(self, title: str, subtitle: str) -> QWidget:
-        pill = QFrame()
-        pill.setStyleSheet("background-color: #161D27; border: 1px solid #2B3543; border-radius: 4px; padding: 4px;")
-        l = QVBoxLayout(pill)
-        l.setContentsMargins(6, 4, 6, 4)
-        l.setSpacing(2)
+    def _create_module_card(self, title: str, phase_tag: str, description: str) -> QFrame:
+        card = QFrame()
+        card.setStyleSheet("background-color: #0B0F14; border: 1px dashed #2B3543; border-radius: 6px; padding: 8px;")
+        c_layout = QVBoxLayout(card)
+        c_layout.setContentsMargins(8, 6, 8, 6)
+        c_layout.setSpacing(4)
 
+        header = QHBoxLayout()
         t = QLabel(title)
-        t.setStyleSheet("font-size: 10px; font-weight: 600; color: #94A3B8;")
-        s = QLabel(subtitle)
-        s.setStyleSheet("font-size: 9px; color: #64748B;")
-        l.addWidget(t)
-        l.addWidget(s)
-        return pill
+        t.setStyleSheet("font-size: 10px; font-weight: 700; color: #EDF2F7; letter-spacing: 0.4px;")
+        header.addWidget(t)
+        header.addStretch()
+
+        tag = QLabel(phase_tag)
+        tag.setStyleSheet("font-size: 9px; font-weight: 600; color: #F59E0B; background: #2D2211; border: 1px solid #78350F; border-radius: 4px; padding: 1px 5px;")
+        header.addWidget(tag)
+        c_layout.addLayout(header)
+
+        d = QLabel(description)
+        d.setWordWrap(True)
+        d.setStyleSheet("font-size: 9px; color: #94A3B8; line-height: 1.3;")
+        c_layout.addWidget(d)
+
+        return card

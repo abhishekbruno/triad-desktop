@@ -117,19 +117,42 @@ class AgentPanel(QFrame):
 
         layout.addWidget(self.telemetry_frame)
 
-        # 3. Action Row (Focus button)
+        # 3. Action Row (Copy & Focus, Import Response, Focus buttons)
         actions_row = QHBoxLayout()
-        actions_row.setSpacing(8)
+        actions_row.setSpacing(6)
 
-        self.btn_focus = QPushButton("Focus Application")
+        self.btn_copy_focus = QPushButton("Copy & Focus")
+        self.btn_copy_focus.setToolTip("Copy staged prompt to clipboard and switch focus to this window")
+        self.btn_copy_focus.setStyleSheet(
+            "QPushButton { background-color: #18202F; border: 1px solid #2D3B55; "
+            "border-radius: 4px; color: #E2E8F0; font-size: 11px; font-weight: 600; padding: 5px 8px; } "
+            "QPushButton:hover { background-color: #243042; border-color: #4285F4; } "
+            "QPushButton:disabled { background-color: #111720; color: #64748B; border-color: #1D2633; }"
+        )
+        self.btn_copy_focus.clicked.connect(lambda: self.copy_focus_requested.emit(self.agent_id))
+        actions_row.addWidget(self.btn_copy_focus, 3)
+
+        self.btn_import = QPushButton("Import Response")
+        self.btn_import.setToolTip("Inspect, verify provenance, and import response copied from this application")
+        self.btn_import.setStyleSheet(
+            "QPushButton { background-color: #172420; border: 1px solid #1F3D33; "
+            "border-radius: 4px; color: #34D399; font-size: 11px; font-weight: 600; padding: 5px 8px; } "
+            "QPushButton:hover { background-color: #1F362C; border-color: #10B981; } "
+            "QPushButton:disabled { background-color: #111720; color: #64748B; border-color: #1D2633; }"
+        )
+        self.btn_import.clicked.connect(lambda: self.import_requested.emit(self.agent_id))
+        actions_row.addWidget(self.btn_import, 3)
+
+        self.btn_focus = QPushButton("Focus")
+        self.btn_focus.setToolTip("Bring this application's window to foreground")
         self.btn_focus.setStyleSheet(
             "QPushButton { background-color: #1D2633; border: 1px solid #2B3543; "
-            "border-radius: 4px; color: #EDF2F7; font-size: 11px; font-weight: 600; padding: 5px 12px; } "
-            "QPushButton:hover { background-color: #243042; border-color: #425268; } "
+            "border-radius: 4px; color: #94A3B8; font-size: 11px; font-weight: 600; padding: 5px 8px; } "
+            "QPushButton:hover { background-color: #243042; border-color: #425268; color: #EDF2F7; } "
             "QPushButton:disabled { background-color: #111720; color: #64748B; border-color: #1D2633; }"
         )
         self.btn_focus.clicked.connect(self._on_focus_clicked)
-        actions_row.addWidget(self.btn_focus, 1)
+        actions_row.addWidget(self.btn_focus, 2)
 
         layout.addLayout(actions_row)
 
@@ -212,6 +235,29 @@ class AgentPanel(QFrame):
                 self.lbl_win.setText("Window: No window bound")
                 self.btn_focus.setEnabled(False)
 
+    def show_feedback(self, text: str, is_error: bool = False) -> None:
+        """Displays inline feedback message below action row."""
+        if not text:
+            self.feedback_lbl.setText("")
+            self.feedback_lbl.setVisible(False)
+            return
+
+        color = "#F87171" if is_error else "#34D399"
+        self.feedback_lbl.setStyleSheet(f"font-size: 10px; color: {color}; font-weight: 500;")
+        self.feedback_lbl.setText(text)
+        self.feedback_lbl.setVisible(True)
+
+    def set_round_status(self, status: AgentRoundStatus) -> None:
+        """Updates the response status pill according to session round status."""
+        if status == AgentRoundStatus.RESPONSE_ACCEPTED:
+            self.set_response_status("ACCEPTED", "bound")
+        elif status == AgentRoundStatus.PROMPT_COPIED:
+            self.set_response_status("COPIED", "detected")
+        elif status == AgentRoundStatus.PROMPT_STAGED:
+            self.set_response_status("STAGED", "missing")
+        else:
+            self.set_response_status("PENDING", "missing")
+
     def set_response_status(self, status_text: str, status_type: str = "missing") -> None:
         """Updates the response status pill."""
         self.resp_pill.setText(status_text.upper())
@@ -220,17 +266,18 @@ class AgentPanel(QFrame):
         self.resp_pill.style().polish(self.resp_pill)
 
     def set_response(self, response: Optional[ModelResponse]) -> None:
-        """Displays real imported response data."""
+        """Displays real imported response data with provenance verification."""
         self.current_response = response
         if response:
             self.response_text.setPlainText(response.raw_response)
-            self.set_response_status("Imported", "bound")
+            self.set_round_status(AgentRoundStatus.RESPONSE_ACCEPTED)
+            rev_text = f"Rev {response.revision_number}"
             self.telemetry_lbl.setText(
-                f"Words: {response.word_count} | Chars: {response.char_count} | SHA-256: {response.sha256_hash[:12]}..."
+                f"Words: {response.word_count:,} | Chars: {response.char_count:,} | {rev_text} | SHA-256: {response.sha256_hash[:12]}..."
             )
         else:
             self.response_text.clear()
-            self.set_response_status("Not Requested", "missing")
+            self.set_round_status(AgentRoundStatus.PENDING)
             self.telemetry_lbl.setText("Awaiting response import...")
 
     def _on_focus_clicked(self) -> None:

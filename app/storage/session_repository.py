@@ -5,6 +5,8 @@ from typing import Any, Dict, List, Optional
 from app.models.agent import SUPPORTED_AGENTS
 from app.models.session import (
     AgentRoundStatus,
+    ModelResponse,
+    OutboundPrompt,
     ReasoningMode,
     ReasoningSession,
     SessionState,
@@ -62,11 +64,47 @@ class SessionRepository:
             max_rounds=session.max_rounds,
             mode=session.mode.value,
         )
-        logger.info("Created session %s: '%s'", session_id, cleaned_title)
+
+        # Stage independent Round 1 prompts for all three AI participants
+        for agent_id, defn in SUPPORTED_AGENTS.items():
+            prompt_text = (
+                f"<<<TRIAD_REASONING_COUNCIL: ROUND 1 (INDEPENDENT)>>>\n"
+                f"Participant: {defn.display_name}\n"
+                f"Topic: {cleaned_title}\n\n"
+                f"Problem Statement / Question:\n"
+                f"{cleaned_question}\n\n"
+                f"Instructions:\n"
+                f"1. Formulate your independent analysis and detailed recommendation.\n"
+                f"2. Explicitly outline any core assumptions, technical tradeoffs, or constraints.\n"
+                f"3. Note: This is an isolated round; you have not been provided with peer answers. "
+                f"Please focus solely on the provided problem statement.\n"
+                f"<<<END_PROMPT>>>"
+            )
+            prompt_id = f"p_{session_id}_1_{agent_id}"
+            outbound = OutboundPrompt(
+                prompt_id=prompt_id,
+                session_id=session_id,
+                round_number=1,
+                agent_id=agent_id,
+                prompt_text=prompt_text,
+                staged_at=now,
+            )
+            session.prompts[agent_id] = outbound
+            session.agent_statuses[agent_id] = AgentRoundStatus.PROMPT_STAGED
+
+            self.db.save_outbound_prompt(
+                prompt_id=prompt_id,
+                session_id=session_id,
+                round_number=1,
+                agent_id=agent_id,
+                prompt_text=prompt_text,
+            )
+
+        logger.info("Created session %s: '%s' with staged prompts", session_id, cleaned_title)
         return session
 
     def get_session(self, session_id: str) -> Optional[ReasoningSession]:
-        """Loads a ReasoningSession from storage by its ID."""
+        """Loads a ReasoningSession from storage by its ID, restoring staged prompts and accepted responses."""
         row = self.db.get_reasoning_session(session_id)
         if not row:
             return None
@@ -83,7 +121,7 @@ class SessionRepository:
         except (ValueError, KeyError):
             pass
 
-        return ReasoningSession(
+        session = ReasoningSession(
             session_id=row["session_id"],
             title=row["title"],
             initial_question=row["initial_question"],
@@ -95,6 +133,46 @@ class SessionRepository:
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
+
+        # Load staged prompts for current round
+        prompts = self.db.get_outbound_prompts(session_id, session.current_round)
+        for p in prompts:
+            agent_id = p["agent_id"]
+            session.prompts[agent_id] = OutboundPrompt(
+                prompt_id=p["prompt_id"],
+                session_id=session_id,
+                round_number=p["round_number"],
+                agent_id=agent_id,
+                prompt_text=p["prompt_text"],
+                staged_at=p["staged_at"],
+                copied_at=p.get("copied_at"),
+            )
+            if p.get("copied_at"):
+                session.agent_statuses[agent_id] = AgentRoundStatus.PROMPT_COPIED
+            else:
+                session.agent_statuses[agent_id] = AgentRoundStatus.PROMPT_STAGED
+
+        # Load accepted responses for current round
+        responses = self.db.get_session_responses(session_id, session.current_round)
+        for r in responses:
+            agent_id = r["agent_id"]
+            session.responses[agent_id] = ModelResponse(
+                response_id=r["response_id"],
+                session_id=session_id,
+                round_number=r["round_number"],
+                agent_id=agent_id,
+                prompt_sent="",
+                raw_response=r["response_text"],
+                sha256_hash=r["sha256_hash"],
+                word_count=r["word_count"],
+                char_count=r["char_count"],
+                source_type=r.get("source_type", "manual_import"),
+                revision_number=r.get("revision_number", 1),
+                timestamp=r["imported_at"],
+            )
+            session.agent_statuses[agent_id] = AgentRoundStatus.RESPONSE_ACCEPTED
+
+        return session
 
     def list_sessions(self, limit: int = 50) -> List[ReasoningSession]:
         """Lists recent reasoning sessions ordered by last modification."""

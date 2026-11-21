@@ -157,6 +157,7 @@ class MainWindow(QMainWindow):
             registry=self.registry,
             window_manager=self.window_mgr,
             session_manager=self.session_mgr,
+            message_bridge=self.bridge,
             parent=self.stack,
         )
         self.stack.addWidget(self.workspace_page)

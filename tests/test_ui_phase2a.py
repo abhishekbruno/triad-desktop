@@ -331,3 +331,120 @@ def test_20_phase_1_regression_coverage(main_window):
     assert conn.status in [
         AgentStatus.MISSING, AgentStatus.DETECTED, AgentStatus.BOUND, AgentStatus.STALE
     ]
+
+
+def test_21_agent_panel_actions_and_feedback(main_window):
+    """Test 21: AgentPanel has Copy & Focus, Import, and Focus buttons with feedback."""
+    panel = main_window.workspace_page.agent_panels["chatgpt"]
+    assert panel.btn_copy_focus is not None
+    assert panel.btn_import is not None
+    assert panel.btn_focus is not None
+
+    # Test feedback display (using isHidden() since window is not shown)
+    panel.show_feedback("Test error", is_error=True)
+    assert not panel.feedback_lbl.isHidden()
+    assert panel.feedback_lbl.text() == "Test error"
+
+    panel.show_feedback("Test success", is_error=False)
+    assert not panel.feedback_lbl.isHidden()
+    assert panel.feedback_lbl.text() == "Test success"
+
+    panel.show_feedback("")
+    assert panel.feedback_lbl.isHidden()
+
+
+def test_22_round_indicator_banner_and_progress(main_window):
+    """Test 22: Workspace round indicator banner updates dynamically as responses are accepted."""
+    wp = main_window.workspace_page
+    assert wp.round_banner is not None
+    assert "ROUND 1" in wp.round_title_lbl.text()
+    assert "Awaiting Session" in wp.round_counter_pill.text()
+
+    # Create session
+    session = main_window.session_mgr.create_session("Round Banner Test", "Test prompt question")
+    assert "0/3 Responses Accepted" in wp.round_counter_pill.text()
+
+    # Simulate importing response 1
+    main_window.bridge.import_response(session.session_id, 1, "chatgpt", "ChatGPT response text here.")
+    session.agent_statuses["chatgpt"] = session.agent_statuses["chatgpt"].RESPONSE_ACCEPTED
+    wp._update_round_banner()
+    assert "1/3 Responses Accepted" in wp.round_counter_pill.text()
+
+    # Simulate importing response 2
+    main_window.bridge.import_response(session.session_id, 1, "claude", "Claude response text here.")
+    session.agent_statuses["claude"] = session.agent_statuses["claude"].RESPONSE_ACCEPTED
+    wp._update_round_banner()
+    assert "2/3 Responses Accepted" in wp.round_counter_pill.text()
+
+    # Simulate importing response 3
+    main_window.bridge.import_response(session.session_id, 1, "gemini", "Gemini response text here.")
+    session.agent_statuses["gemini"] = session.agent_statuses["gemini"].RESPONSE_ACCEPTED
+    wp._update_round_banner()
+    assert "3/3 — Round 1 Complete" in wp.round_counter_pill.text()
+
+
+def test_23_copy_focus_and_response_import_integration(main_window, monkeypatch):
+    """Test 23: Copy & Focus and Response Import flows update panel text and timeline events."""
+    session = main_window.session_mgr.create_session("Integration Test", "Question on consensus")
+    wp = main_window.workspace_page
+    panel = wp.agent_panels["claude"]
+
+    # Mock clipboard write
+    copied_agents = []
+
+    def mock_copy_and_focus(session_id, round_number, agent_id, **kwargs):
+        copied_agents.append(agent_id)
+        return True, "Copied!"
+
+    monkeypatch.setattr(main_window.bridge, "copy_and_focus", mock_copy_and_focus)
+
+    # Trigger copy focus
+    panel.btn_copy_focus.click()
+    assert "claude" in copied_agents
+    assert "COPIED" in panel.resp_pill.text()
+
+    # Mock dialog exec to import response directly
+    from app.ui.response_import_dialog import ResponseImportDialog
+
+    def mock_exec(dialog_self):
+        dialog_self.confirmed_text = "Claude's verified response for architecture."
+        dialog_self.confirmed_revision = False
+        return 1
+
+    monkeypatch.setattr(ResponseImportDialog, "exec", mock_exec)
+
+    panel.btn_import.click()
+    assert "Claude's verified response" in panel.response_text.toPlainText()
+    assert "ACCEPTED" in panel.resp_pill.text()
+    assert "SHA-256" in panel.telemetry_lbl.text()
+
+
+def test_24_consensus_panel_three_placeholders(main_window):
+    """Test 24: Consensus panel contains three distinct placeholders for Voting, Disagreement, and Minority Report."""
+    cp = main_window.workspace_page.consensus
+    assert cp.btn_cast_ballots is not None
+    assert cp.btn_view_disagreement is not None
+    assert cp.btn_view_report is not None
+
+    assert cp.btn_cast_ballots.isEnabled() is False
+    assert cp.btn_view_disagreement.isEnabled() is False
+    assert cp.btn_view_report.isEnabled() is False
+
+
+def test_25_sidebar_navigation_labels(main_window):
+    """Test 25: Sidebar navigation exposes required buttons."""
+    sb = main_window.sidebar
+    btn_texts = [b.text() for b in sb.buttons.values()]
+    assert "New Discussion" in btn_texts
+    assert "Saved Sessions" in btn_texts
+    assert "Session Search" in btn_texts
+    assert "Agent Connections" in btn_texts
+    assert "Settings" in btn_texts
+
+    mode_texts = [m.text() for m in sb.mode_buttons.values()]
+    assert "Quick Consensus" in mode_texts
+    assert "Deep Debate" in mode_texts
+    assert "Research Council" in mode_texts
+    assert "Code Review Council" in mode_texts
+    assert "Creative Council" in mode_texts
+

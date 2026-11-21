@@ -105,9 +105,13 @@ class Sidebar(QFrame):
         btn_new.setChecked(True)
         self._add_btn(container_layout, btn_new)
 
-        btn_all_sess = self._create_btn("all_sessions", "All Sessions", "AS", "View and manage stored sessions")
-        btn_all_sess.clicked.connect(lambda: self.page_selected.emit("sessions"))
-        self._add_btn(container_layout, btn_all_sess)
+        btn_saved_sess = self._create_btn("all_sessions", "Saved Sessions", "SS", "View and manage saved reasoning sessions")
+        btn_saved_sess.clicked.connect(lambda: self.page_selected.emit("sessions"))
+        self._add_btn(container_layout, btn_saved_sess)
+
+        btn_search = self._create_btn("history_search", "Session Search", "SR", "Search sessions by title or question")
+        btn_search.clicked.connect(lambda: (self.page_selected.emit("sessions"), self.search_requested.emit()))
+        self._add_btn(container_layout, btn_search)
 
         # SECTION: REASONING MODES
         self.lbl_reasoning = self._add_section_label(container_layout, "REASONING MODES")
@@ -137,16 +141,6 @@ class Sidebar(QFrame):
             self.mode_group.addButton(m_btn)
             self.mode_buttons[mode_key] = m_btn
             container_layout.addWidget(m_btn)
-
-        # SECTION: HISTORY
-        self.lbl_history = self._add_section_label(container_layout, "HISTORY")
-        btn_recent = self._create_btn("history_recent", "Recent Sessions", "RS", "Browse recent discussion history")
-        btn_recent.clicked.connect(lambda: self.page_selected.emit("sessions"))
-        self._add_btn(container_layout, btn_recent)
-
-        btn_search = self._create_btn("history_search", "Search Sessions", "SS", "Search sessions by title or question")
-        btn_search.clicked.connect(lambda: (self.page_selected.emit("sessions"), self.search_requested.emit()))
-        self._add_btn(container_layout, btn_search)
 
         # SECTION: SYSTEM
         self.lbl_system = self._add_section_label(container_layout, "SYSTEM")
@@ -191,7 +185,6 @@ class Sidebar(QFrame):
             self.brand_label.setText("T")
             self.lbl_workspace.setVisible(False)
             self.lbl_reasoning.setVisible(False)
-            self.lbl_history.setVisible(False)
             self.lbl_system.setVisible(False)
         else:
             self.setFixedWidth(230)
@@ -199,7 +192,6 @@ class Sidebar(QFrame):
             self.brand_label.setText("TRIAD")
             self.lbl_workspace.setVisible(True)
             self.lbl_reasoning.setVisible(True)
-            self.lbl_history.setVisible(True)
             self.lbl_system.setVisible(True)
 
         for btn in self.buttons.values():
