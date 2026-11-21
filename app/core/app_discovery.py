@@ -46,8 +46,25 @@ class AppDiscoveryService:
             logger.warning("win32 modules not available. Discovery running in stub/mock mode.")
             return candidates
 
+        # Ensure thread has access to interactive desktop (handles non-interactive or virtual subshells)
+        try:
+            import ctypes
+            user32 = ctypes.windll.user32
+            h_default = user32.OpenDesktopW("Default", 0, False, 0x01FF)
+            if h_default:
+                user32.SetThreadDesktop(h_default)
+            ctypes.windll.kernel32.SetLastError(0)
+        except Exception as dt_err:
+            logger.debug("Desktop switch notice: %s", dt_err)
+
         def enum_callback(hwnd: int, extra: None) -> bool:
             try:
+                try:
+                    import ctypes
+                    ctypes.windll.kernel32.SetLastError(0)
+                except Exception:
+                    pass
+
                 if not win32gui.IsWindow(hwnd):
                     return True
 

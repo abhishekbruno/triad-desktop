@@ -85,6 +85,7 @@ Detailed technical design specifications are available in the `docs/` directory:
 - [docs/DATA_MODEL.md](docs/DATA_MODEL.md): Relational SQLite schema, Entity-Relationship diagram, migrations, and JSON export specifications.
 - [docs/INTEGRATION_LIMITATIONS.md](docs/INTEGRATION_LIMITATIONS.md): Technical realities of Windows desktop AI applications, why internal APIs do not exist, and the user-assisted bridge design.
 - [docs/ROADMAP.md](docs/ROADMAP.md): Phased roadmap, acceptance criteria, and quality gates.
+- [docs/TESTING.md](docs/TESTING.md): Testing strategy, real Windows desktop verification results, confirmed defects and fixes.
 
 ---
 

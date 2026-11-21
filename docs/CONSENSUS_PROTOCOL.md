@@ -12,7 +12,9 @@ The protocol prevents groupthink, catches single-model hallucinations, and provi
 2. **First-Round Epistemic Independence**: Initial responses are formulated in isolation without access to peer outputs.
 3. **Institutional Skepticism (Devil's Advocate)**: Emerging agreements must withstand targeted adversarial stress-testing.
 4. **First-Class Minority Dissent**: Dissenting views are never discarded; they are compiled into structured Minority Reports.
-5. **Human Primacy**: The human operator retains authority to adjudicate ambiguous candidates, request supplemental rounds, or override verdicts.
+5. **Separation of Consensus from Factual Verification**: Majority agreement (even 3/3 unanimous) is a measure of multi-model cognitive alignment, NOT independent empirical truth. Fact-checking and claim verification (MOD-07) remain decoupled from ballot outcomes.
+6. **Configurable Round Limits**: Discussion rounds default to a maximum of **three rounds** (1 independent + up to 2 debate/revision rounds), fully configurable by the human operator.
+7. **Human Primacy**: The human operator retains authority to adjudicate ambiguous candidates, request supplemental rounds, or override verdicts.
 
 ---
 
@@ -164,7 +166,20 @@ To ensure sessions terminate efficiently without runaway iterations:
 
 ---
 
-## 8. Human Override Protocol
+## 8. Epistemic Independence: Consensus vs Factual Verification
+
+A foundational tenet of the TRIAD consensus architecture is that **a majority or unanimous vote must never be conflated with objective truth**:
+
+1. **Shared Hallucination Risk**: Large language models may share common pre-training biases or memorized inaccuracies. If all three models repeat the same flawed assertion, the resulting 3/3 vote reflects unanimous agreement, not empirical validation.
+2. **Claim Tracking Decoupling (MOD-07)**:
+   - Claims extracted during deliberation are tagged as `unverified`, `supported`, `disputed`, or `refuted`.
+   - A model's self-reported confidence score (0.0 to 1.0) is recorded as subjective metadata, not verified certainty.
+   - The final report explicitly presents claims as "Council Claims" rather than "Verified Facts".
+3. **No Consensus on Ties**: A three-way split (1/1/1) or incomplete ballot is never coerced into artificial agreement. It is reported transparently as `NO_CONSENSUS` with all competing arguments preserved.
+
+---
+
+## 9. Human Override Protocol
 
 The human operator has ultimate governance authority (MOD-12):
 

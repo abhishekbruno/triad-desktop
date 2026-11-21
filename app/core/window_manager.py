@@ -25,12 +25,25 @@ class WindowManager:
     """
 
     @staticmethod
+    def _ensure_desktop_access() -> None:
+        """Ensures calling thread has access to interactive desktop."""
+        try:
+            import ctypes
+            user32 = ctypes.windll.user32
+            h_default = user32.OpenDesktopW("Default", 0, False, 0x01FF)
+            if h_default:
+                user32.SetThreadDesktop(h_default)
+        except Exception:
+            pass
+
+    @staticmethod
     def is_window_valid(hwnd: Optional[int]) -> bool:
         """Verifies whether an HWND currently references a valid top-level window."""
         if not hwnd or hwnd <= 0:
             return False
         if not HAS_WIN32:
             return False
+        WindowManager._ensure_desktop_access()
         try:
             return bool(win32gui.IsWindow(hwnd))
         except Exception:
@@ -41,6 +54,7 @@ class WindowManager:
         """Inspects non-sensitive state of a window."""
         if not HAS_WIN32 or not WindowManager.is_window_valid(hwnd):
             return {"valid": False}
+        WindowManager._ensure_desktop_access()
         try:
             is_visible = bool(win32gui.IsWindowVisible(hwnd))
             is_minimized = bool(win32gui.IsIconic(hwnd))
@@ -68,6 +82,7 @@ class WindowManager:
         if not HAS_WIN32:
             return False, "Windows API (pywin32) is not available on this platform."
 
+        WindowManager._ensure_desktop_access()
         if not WindowManager.is_window_valid(hwnd):
             return False, f"Window handle {hwnd} is invalid or has been closed."
 

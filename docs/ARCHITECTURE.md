@@ -250,12 +250,15 @@ classDiagram
 
 #### MOD-11: Reasoning Mode Manager
 - **Status**: Architecture defined.
-- **Function**: Configures round limits, prompt templates, and decision thresholds across distinct operational modes:
-  1. **Quick Consensus**: 1 independent round + immediate ballot (expedited decision-making).
-  2. **Deep Debate**: 1 independent round + up to 3 critique rounds + Devil's Advocate + ballot.
-  3. **Research Council**: Prioritizes source citation, methodology review, and verification status.
-  4. **Code Review Council**: Focuses on security vulnerabilities, edge-case handling, performance, and architecture.
-  5. **Creative Council**: Divergent idea generation followed by multi-criteria trade-off selection.
+- **Function**: Configures round limits, prompt templates, decision thresholds, and reporting formats across five specialized operational modes:
+
+| Mode | Default Rounds | Key Focus & Prompt Template | Stopping Rules | Output Format |
+|---|---|---|---|---|
+| **Quick Consensus** | 1 Round (Max 1) | Direct Independent Answer + Immediate Structured Ballot. | Terminates after Round 1 ballot collection. | Fast Consensus Summary with Vote Tally. |
+| **Deep Debate** | 3 Rounds (Max 4) | Cross-Model Critique, Methodological Challenge, Devil's Advocate Stress-Test. | Convergence (all agree in Rd 2) or Stagnation (no new claims for 2 rds). | Comprehensive Deliberation Report with Disagreement Map and Minority Report. |
+| **Research Council** | 3 Rounds (Max 3) | Claim Extraction, Source Citation Analysis, Evidence Substantiation. | Exhaustion of unverified factual challenges. | Evidence Matrix, Verified Claims, and Unresolved Citations. |
+| **Code Review Council** | 3 Rounds (Max 3) | Static Analysis, Concurrency, Security Vulnerability, Edge Cases, API Design. | Security flaws refuted or consensus remediation adopted. | Unified Architecture Review, Vulnerability Ledger, and Benchmark Trade-offs. |
+| **Creative Council** | 2 Rounds (Max 3) | Divergent Brainstorming -> Cross-Pollination -> Multi-Criteria Selection. | Creative proposal convergence on top 2 concepts. | Idea Matrix, Trade-off Grid, and Synthesized Hybrid Proposal. |
 
 #### MOD-12: Human Oversight
 - **Status**: Architecture defined.
