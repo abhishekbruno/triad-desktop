@@ -1,17 +1,46 @@
 """TRIAD Data Models."""
 from app.models.agent import (
+    AgentAppDefinition,
     AgentConnection,
     AgentStatus,
-    WindowCandidate,
-    AgentAppDefinition,
     SUPPORTED_AGENTS,
+    WindowCandidate,
+)
+from app.models.session import (
+    CandidateProposal,
+    ClaimCategory,
+    ConsensusDecision,
+    ConsensusVerdict,
+    DisagreementPoint,
+    ModelBallot,
+    ModelResponse,
+    ReasoningMode,
+    ReasoningRound,
+    ReasoningSession,
+    RoundType,
+    SessionState,
+    StructuredClaim,
+    VerificationStatus,
 )
 
 __all__ = [
+    "AgentAppDefinition",
     "AgentConnection",
     "AgentStatus",
-    "WindowCandidate",
-    "AgentAppDefinition",
+    "CandidateProposal",
+    "ClaimCategory",
+    "ConsensusDecision",
+    "ConsensusVerdict",
+    "DisagreementPoint",
+    "ModelBallot",
+    "ModelResponse",
+    "ReasoningMode",
+    "ReasoningRound",
+    "ReasoningSession",
+    "RoundType",
     "SUPPORTED_AGENTS",
+    "SessionState",
+    "StructuredClaim",
+    "VerificationStatus",
+    "WindowCandidate",
 ]
-

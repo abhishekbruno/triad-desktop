@@ -1,37 +1,113 @@
-# TRIAD Development Roadmap
+# TRIAD — Development Roadmap & Phase Gating
 
-This document outlines the phased engineering milestones for the TRIAD Local AI Consensus Workspace.
+This document outlines the phased engineering milestones, feature mapping, and quality gates for the TRIAD Local AI Consensus Workspace.
 
-## Phase 1: Native Desktop Application Discovery and Connection (Current)
-- Windows application discovery service targeting ChatGPT Desktop, Claude Desktop, and Gemini Desktop.
-- Non-sensitive process and window inspection (HWND, PID, executable name, window title, state).
-- Multi-window candidate resolution with interactive user selection.
-- Foreground window restoration and focus respecting Windows foreground lock constraints.
-- Real-time connection monitoring detecting process exits and window invalidations.
-- Local SQLite database preserving user preferences without storing transient runtime IDs or session data.
+---
 
-## Phase 2: User-Controlled Message Exchange (Planned)
-- Safe, user-authorized dispatch of prompts to selected native application windows.
-- Structured clipboard and accessibility-based interface bridges.
-- Visual inspection of outbound messages prior to manual or automated dispatch.
+## Roadmap Overview & Feature Matrix
 
-## Phase 3: Multi-Agent Discussion Engine (Planned)
-- Orchestration round engine exchanging intermediary responses across the three participants.
-- Cross-examination rounds where each model evaluates perspectives from the other two.
-- Configurable reasoning loops and termination criteria.
+```mermaid
+flowchart LR
+    P1["Phase 1: Discovery & Focus<br/>(COMPLETED)"] --> P2["Phase 2: Message Exchange<br/>(PLANNED)"]
+    P2 --> P3["Phase 3: Debate Engine<br/>(PLANNED)"]
+    P3 --> P4["Phase 4: Consensus & Map<br/>(PLANNED)"]
+    P4 --> P5["Phase 5: Memory & Replay<br/>(PLANNED)"]
+    P5 --> P6["Phase 6: Hardening & Packaging<br/>(PLANNED)"]
+```
 
-## Phase 4: Consensus and Majority Voting (Planned)
-- Semantic similarity comparison and claim alignment verification.
-- Detection of unanimous agreement, majority consensus (2-out-of-3), and unresolved dissents.
-- Synthesis of consensus summaries highlighting converging facts and distinct viewpoints.
+| Phase | Milestone Name | Status | Modules Implemented | Key Deliverables |
+|---|---|---|---|---|
+| **Phase 1** | Desktop Discovery & Connection | **COMPLETED** | MOD-01 | Win32 discovery, HWND/PID tracking, window focus, SQLite settings, PySide6 UI. |
+| **Phase 2** | User-Controlled Message Exchange | Planned | MOD-02, MOD-14 | Prompt staging, safe clipboard bridge, import modals, response sealing, input sanitization. |
+| **Phase 3** | Reasoning & Cross-Model Debate Engine | Planned | MOD-03, MOD-04, MOD-05, MOD-06, MOD-11 | Epistemic independence (Round 1), critique prompts, Devil's Advocate mode, 5 reasoning modes. |
+| **Phase 4** | Consensus, Balloting & Disagreement Map | Planned | MOD-07, MOD-08, MOD-09, MOD-12 | Deterministic voting (3/3, 2/3), proposal equivalence, Minority Reports, Disagreement Map, human overrides. |
+| **Phase 5** | Shared Memory, Replay & Export | Planned | MOD-10, MOD-13 | Versioned SQLite relational schema, interactive timeline replay, Markdown/JSON/HTML export. |
+| **Phase 6** | Hardening, OS Matrix & Packaging | Planned | MOD-01–14 | Standalone PyInstaller binary, Windows 10/11 testing matrix, performance tuning. |
 
-## Phase 5: Shared Workspace and History (Planned)
-- Local session ledger recording full deliberation histories.
-- Export options (Markdown, JSON, HTML).
-- Privacy-first on-disk encryption for archived deliberations.
+---
 
-## Phase 6: Optimization, Hardening, and Packaging (Planned)
-- Production PyInstaller bundling for standalone Windows distribution.
-- Automated CI testing matrix across Windows OS releases.
-- Performance optimization ensuring minimal CPU and memory overhead during idle monitoring.
+## Phase Details & Acceptance Criteria
 
+### Phase 1: Native Desktop Application Connection (COMPLETED)
+- **Status**: Operational & Verified (`29/29 tests passing`).
+- **Core Capabilities**:
+  - Discovers running instances of ChatGPT Desktop, Claude Desktop, and Gemini Desktop.
+  - Resolves multi-window ambiguities with interactive user selection.
+  - Restores minimized windows and brings target windows to foreground.
+  - Continuous background health monitoring detecting window closes and process termination.
+  - Local SQLite preference storage without saving transient runtime handles across reboots.
+- **Acceptance Gate**:
+  - All 10 acceptance scenarios passing in automated test suite.
+  - Clean headless PySide6 initialization.
+  - Verified PyInstaller executable build.
+
+---
+
+### Phase 2: User-Controlled Message Exchange Bridge (Next Milestone)
+- **Status**: Planned (Architecture & Contracts Defined).
+- **Core Capabilities**:
+  - `MOD-02 MessageExchangeBridge`: Prompt formatting templates tailored for each application.
+  - One-click **Copy & Focus**: Puts formatted prompt onto clipboard and raises the application window.
+  - Import dialog for user-pasted model responses with word-count and SHA-256 integrity hashing.
+  - `MOD-14 Security`: Delimiter envelope sanitization preventing prompt injection.
+- **Acceptance Gate**:
+  - Round-trip clipboard exchange verified across all three desktop applications.
+  - Strict provenance validation: every imported response tagged with timestamp and source agent.
+  - Simulated untrusted payloads safely contained within prompt boundaries.
+
+---
+
+### Phase 3: Reasoning Session & Cross-Model Debate Engine
+- **Status**: Planned (Data Models Defined in `app/models/session.py`).
+- **Core Capabilities**:
+  - `MOD-03 ReasoningSessionManager`: Multi-round session state machine.
+  - `MOD-04 IndependentReasoningEngine`: Round 1 epistemic isolation (sealed responses).
+  - `MOD-05 CrossModelDebateEngine`: Automated synthesis of cross-model critique prompts.
+  - `MOD-06 DevilsAdvocateEngine`: Adversarial stress-testing of emerging consensus.
+  - `MOD-11 ReasoningModeManager`: Support for Quick Consensus, Deep Debate, Research Council, Code Review, and Creative Council.
+- **Acceptance Gate**:
+  - Independent round verified: no model receives peer answers until all 3 submit Round 1.
+  - Debate round generation verified with mock responses.
+  - Devil's Advocate correctly assigned to natural dissenter or rotating challenger.
+  - Hard round limits strictly enforced.
+
+---
+
+### Phase 4: Deterministic Consensus, Balloting & Disagreement Map
+- **Status**: Planned (Protocol Defined in `docs/CONSENSUS_PROTOCOL.md`).
+- **Core Capabilities**:
+  - `MOD-08 ConsensusEngine`: Deterministic ballot calculation (3/3 Unanimous, 2/3 Majority, No Consensus).
+  - `MOD-07 ClaimAndEvidenceManager`: Structured claim extraction and evidence tracking.
+  - `MOD-09 DisagreementMap`: Interactive visual claim matrix (Support vs Oppose).
+  - Mandatory **Minority Report** generation on 2/3 majority votes.
+  - `MOD-12 HumanOversight`: Human override modal with mandatory audit trail.
+- **Acceptance Gate**:
+  - Complete mathematical test suite verifying all voting permutations.
+  - Automated generation of Minority Report on 2/3 split.
+  - Interactive proposal ambiguity resolution flow.
+
+---
+
+### Phase 5: Shared Memory, Session Replay & Export
+- **Status**: Planned (Schema Defined in `docs/DATA_MODEL.md`).
+- **Core Capabilities**:
+  - `MOD-10 SharedMemoryManager`: Full relational SQLite persistence across sessions, rounds, claims, ballots, and decisions.
+  - Forward-only database migration runner.
+  - `MOD-13 SessionReplayAndExport`: Step-by-step interactive visual replay of discussion evolution.
+  - Self-contained exports to Markdown, JSON, and printable HTML.
+- **Acceptance Gate**:
+  - End-to-end session serialization and deserialization without data loss.
+  - Migration idempotence: running migrations against existing databases causes zero corruption.
+  - Validated Markdown and JSON export formats.
+
+---
+
+### Phase 6: Hardening, Packaging & Optimization
+- **Status**: Planned.
+- **Core Capabilities**:
+  - Single-file or clean onedir PyInstaller Windows distribution.
+  - Memory leak and idle CPU utilization audits (<1% idle CPU).
+  - CI test matrix across clean Windows 10 and Windows 11 VMs.
+- **Acceptance Gate**:
+  - Standalone executable launches instantly without requiring pre-installed Python.
+  - Clean uninstallation and zero orphaned registry or AppData remnants.
