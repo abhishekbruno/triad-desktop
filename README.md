@@ -168,11 +168,30 @@ python main.py
 pytest -v
 ```
 
-### 5. Build Standalone Executable
+### 5. Build Standalone Executable & Create Desktop Shortcut
+
+TRIAD packages into a native Windows executable with its custom geometric dark-graphite icon and launches without opening a command prompt window.
+
+#### One-Click Build & Desktop Shortcut (Recommended)
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\build.ps1 -Clean
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
-The compiled standalone binary will be generated in `dist\TRIAD\TRIAD.exe`.
+This automatically compiles `dist\TRIAD\TRIAD.exe` and creates a `TRIAD.lnk` shortcut on your Windows desktop (compatible with OneDrive folder redirection).
+
+#### Manual Build
+```powershell
+# Build standalone executable with custom icon and assets
+powershell -ExecutionPolicy Bypass -File .\build.ps1 -Clean
+
+# (Optional) Create or refresh the desktop shortcut
+powershell -ExecutionPolicy Bypass -File .\Create-DesktopShortcut.ps1
+```
+The compiled standalone binary is placed in `dist\TRIAD\TRIAD.exe`.
+
+### 6. One-Click Daily Workflow
+1. Double-click the **TRIAD** icon on your Windows Desktop.
+2. The unified workspace opens immediately with no terminal window.
+3. Your local deliberation history and settings are automatically retrieved from `%LOCALAPPDATA%\TRIAD\triad_workspace.db`.
 
 ---
 

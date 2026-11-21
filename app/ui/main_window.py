@@ -1,7 +1,9 @@
 import os
+import sys
 from pathlib import Path
 from typing import Dict, Optional
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -65,6 +67,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1040, 720)
         self.resize(1280, 800)
 
+        self._set_window_icon()
         self._load_stylesheet()
         self._build_ui()
         self._wire_signals()
@@ -73,6 +76,19 @@ class MainWindow(QMainWindow):
 
         # Initial scan and summary update
         QTimer.singleShot(150, self.scan_applications)
+
+    def _set_window_icon(self) -> None:
+        """Sets the application window icon."""
+        candidates = [
+            Path(__file__).resolve().parent.parent.parent / "assets" / "triad.ico",
+            Path(getattr(sys, "_MEIPASS", ".")) / "assets" / "triad.ico",
+            Path(__file__).resolve().parent.parent.parent / "assets" / "triad.png",
+            Path(getattr(sys, "_MEIPASS", ".")) / "assets" / "triad.png",
+        ]
+        for p in candidates:
+            if p.exists():
+                self.setWindowIcon(QIcon(str(p)))
+                break
 
     def _load_stylesheet(self) -> None:
         """Loads the primary design token stylesheet."""

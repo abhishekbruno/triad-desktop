@@ -31,10 +31,31 @@ def main() -> int:
         database=database,
     )
 
+    # Set explicit Windows AppUserModelID so taskbar displays the custom icon
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("triad.desktop.consensus.workspace")
+    except Exception:
+        pass
+
     # Launch PySide6 GUI Application
     app = QApplication(sys.argv)
     app.setApplicationName("TRIAD Local AI Workspace")
     app.setOrganizationName("TRIAD Project")
+
+    # Set Application Window & Taskbar Icon
+    from pathlib import Path
+    from PySide6.QtGui import QIcon
+
+    base_dir = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    icon_candidates = [
+        base_dir / "assets" / "triad.ico",
+        base_dir / "assets" / "triad.png",
+    ]
+    for ic in icon_candidates:
+        if ic.exists():
+            app.setWindowIcon(QIcon(str(ic)))
+            break
 
     window = MainWindow(
         registry=registry,
