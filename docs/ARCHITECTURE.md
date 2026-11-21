@@ -192,10 +192,10 @@ classDiagram
 - **Constraints**: No private memory access, no thread injection, respects Windows foreground lock rules.
 
 #### MOD-02: Message Exchange Bridge
-- **Status**: Target for Phase 2.
+- **Status**: Implemented in Phase 2 (`app/core/message_bridge.py`, `app/ui/response_import_dialog.py`, `app/ui/session_agent_panel.py`).
 - **Function**: Manages clean, user-authorized transfer of prompts into native application input boxes and ingests returned responses.
-- **Mechanism**: Prepares model-tailored prompt payloads, copies them to the system clipboard, switches focus to the target window (via MOD-01), and provides an import modal for pasted model output.
-- **Guarantees**: Records origin timestamp, prompt hash, and source agent attribution.
+- **Mechanism**: Formulates isolated Round 1 prompts, copies them to the system clipboard, switches focus to the target window (via MOD-01), provides an inspection modal for pasted model output, and calculates SHA-256 integrity checksums.
+- **Guarantees**: Records origin timestamp, prompt hash, word count, character count, and revision number. Strict first-round epistemic isolation enforced.
 
 #### MOD-03: Reasoning Session Manager
 - **Status**: Architecture defined.

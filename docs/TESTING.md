@@ -18,10 +18,11 @@ The test suite is organized under `tests/` and executed with `pytest`:
 tests/
 ├── __init__.py
 ├── test_discovery.py       # PWA, native, package signatures, and rejection of misleading titles
+├── test_message_bridge.py  # Phase 2: Staging, clipboard copy, focus, response import, SHA-256 hashes
 ├── test_window_manager.py  # Window validation, focus restoration, foreground lock handling
 ├── test_registry.py        # Lifecycle transitions (MISSING -> DETECTED -> BOUND -> STALE)
 ├── test_monitor.py         # Process termination and window closing detection
-├── test_storage.py         # SQLite persistence, preferences, and discovery audit logs
+├── test_storage.py         # SQLite persistence, preferences, sessions, and responses
 └── test_scenarios.py       # Comprehensive 10-point acceptance scenarios
 ```
 
@@ -31,13 +32,21 @@ tests/
 ```
 
 ### Automated Test Results
-- **Collected**: 29
-- **Passed**: 29
+- **Collected**: 46
+- **Passed**: 46
 - **Failed**: 0
-- **Execution Time**: ~0.25 seconds
+- **Execution Time**: ~1.04 seconds
 
 ```text
-tests/test_discovery.py::test_classify_native_chatgpt PASSED             [  3%]
+tests/test_discovery.py (5/5 passed)
+tests/test_message_bridge.py (17/17 passed)
+tests/test_monitor.py (2/2 passed)
+tests/test_registry.py (4/4 passed)
+tests/test_scenarios.py (10/10 passed)
+tests/test_storage.py (4/4 passed)
+tests/test_window_manager.py (4/4 passed)
+============================== 46 passed in 1.04s ==============================
+```
 tests/test_discovery.py::test_classify_native_claude PASSED              [  6%]
 tests/test_discovery.py::test_classify_gemini_pwa_mode PASSED            [ 10%]
 tests/test_discovery.py::test_reject_unrelated_process_with_misleading_title PASSED [ 13%]
@@ -123,3 +132,4 @@ To verify TRIAD on your Windows machine with all three desktop apps open:
    - Close Claude Desktop.
    - Within 1.5 seconds, the Claude card status transitions to `STALE`.
    - Re-open Claude and click **Refresh All**: Claude rebinds; ChatGPT and Gemini remain unaffected.
+

@@ -57,20 +57,20 @@ For comprehensive architectural specifications, see [docs/ARCHITECTURE.md](docs/
 
 ---
 
-## Current Status: Phase 1 Operational
+## Current Status: Phase 1 & Phase 2 Operational
 
 TRIAD is built under a strict phased gating model:
 
 | Phase | Description | Status |
 |---|---|---|
 | **Phase 1** | **Native Desktop Application Discovery & Focus** | **COMPLETED & OPERATIONAL** |
-| **Phase 2** | User-Controlled Message Exchange Bridge | Planned (Next) |
-| **Phase 3** | Reasoning Session & Cross-Model Debate Engine | Planned |
+| **Phase 2** | **User-Controlled Message Exchange Bridge** | **COMPLETED & OPERATIONAL** |
+| **Phase 3** | Reasoning Session & Cross-Model Debate Engine | Planned (Next) |
 | **Phase 4** | Deterministic Consensus & Disagreement Mapping | Planned |
 | **Phase 5** | Shared Memory, Session Replay & Export | Planned |
 | **Phase 6** | Production Hardening, Packaging & CI Matrix | Planned |
 
-> **Phase 1 Scope**: Discovers, registers, monitors, and focuses existing ChatGPT, Claude, and Gemini desktop windows. Phase 1 does not extract conversations, submit prompts automatically, or contact paid external APIs.
+> **Current Operational Capabilities**: Discovers, registers, monitors, and focuses existing ChatGPT, Claude, and Gemini desktop windows (Phase 1), and provides an isolated, user-controlled Message Exchange Bridge to stage prompts, copy & focus, import responses with SHA-256 verification, and track Round 1 completion (Phase 2).
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete multi-phase development plan.
 
@@ -81,6 +81,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete multi-phase development 
 Detailed technical design specifications are available in the `docs/` directory:
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Four-tier architecture, 14 architectural modules (MOD-01 through MOD-14), module dependencies, and security boundaries.
+- [docs/MESSAGE_EXCHANGE.md](docs/MESSAGE_EXCHANGE.md): Message exchange protocol, clipboard handoff, SHA-256 verification, and complete Round 1 workflow.
 - [docs/CONSENSUS_PROTOCOL.md](docs/CONSENSUS_PROTOCOL.md): Mathematical voting calculus, structured ballot schema, Devil's Advocate rules, and Minority Report protocols.
 - [docs/DATA_MODEL.md](docs/DATA_MODEL.md): Relational SQLite schema, Entity-Relationship diagram, migrations, and JSON export specifications.
 - [docs/INTEGRATION_LIMITATIONS.md](docs/INTEGRATION_LIMITATIONS.md): Technical realities of Windows desktop AI applications, why internal APIs do not exist, and the user-assisted bridge design.
@@ -96,7 +97,7 @@ Detailed technical design specifications are available in the `docs/` directory:
 - **Windows APIs**: `pywin32` (`win32gui`, `win32process`, `win32api`, `win32con`)
 - **Process Inspection**: `psutil`
 - **Persistence**: SQLite 3 (Python standard library)
-- **Testing**: `pytest`, `pytest-mock` (29 automated unit and scenario tests)
+- **Testing**: `pytest`, `pytest-mock` (46 automated unit, scenario, and bridge tests)
 - **Packaging**: `pyinstaller` (Windows standalone binary)
 
 ---

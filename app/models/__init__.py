@@ -7,6 +7,7 @@ from app.models.agent import (
     WindowCandidate,
 )
 from app.models.session import (
+    AgentRoundStatus,
     CandidateProposal,
     ClaimCategory,
     ConsensusDecision,
@@ -14,6 +15,7 @@ from app.models.session import (
     DisagreementPoint,
     ModelBallot,
     ModelResponse,
+    OutboundPrompt,
     ReasoningMode,
     ReasoningRound,
     ReasoningSession,
@@ -26,6 +28,7 @@ from app.models.session import (
 __all__ = [
     "AgentAppDefinition",
     "AgentConnection",
+    "AgentRoundStatus",
     "AgentStatus",
     "CandidateProposal",
     "ClaimCategory",
@@ -34,6 +37,7 @@ __all__ = [
     "DisagreementPoint",
     "ModelBallot",
     "ModelResponse",
+    "OutboundPrompt",
     "ReasoningMode",
     "ReasoningRound",
     "ReasoningSession",

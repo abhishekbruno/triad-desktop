@@ -18,7 +18,7 @@ flowchart LR
 | Phase | Milestone Name | Status | Modules Implemented | Key Deliverables |
 |---|---|---|---|---|
 | **Phase 1** | Desktop Discovery & Connection | **COMPLETED** | MOD-01 | Win32 discovery, HWND/PID tracking, window focus, SQLite settings, PySide6 UI. |
-| **Phase 2** | User-Controlled Message Exchange | Planned | MOD-02, MOD-14 | Prompt staging, safe clipboard bridge, import modals, response sealing, input sanitization. |
+| **Phase 2** | User-Controlled Message Exchange | **COMPLETED** | MOD-02, MOD-14 | Prompt staging, safe clipboard bridge, import modals, response sealing, SHA-256 integrity, session restore. |
 | **Phase 3** | Reasoning & Cross-Model Debate Engine | Planned | MOD-03, MOD-04, MOD-05, MOD-06, MOD-11 | Epistemic independence (Round 1), critique prompts, Devil's Advocate mode, 5 reasoning modes. |
 | **Phase 4** | Consensus, Balloting & Disagreement Map | Planned | MOD-07, MOD-08, MOD-09, MOD-12 | Deterministic voting (3/3, 2/3), proposal equivalence, Minority Reports, Disagreement Map, human overrides. |
 | **Phase 5** | Shared Memory, Replay & Export | Planned | MOD-10, MOD-13 | Versioned SQLite relational schema, interactive timeline replay, Markdown/JSON/HTML export. |
@@ -43,22 +43,25 @@ flowchart LR
 
 ---
 
-### Phase 2: User-Controlled Message Exchange Bridge (Next Milestone)
-- **Status**: Planned (Architecture & Contracts Defined).
+### Phase 2: User-Controlled Message Exchange Bridge (COMPLETED)
+- **Status**: Operational & Verified (`46/46 tests passing`).
 - **Core Capabilities**:
-  - `MOD-02 MessageExchangeBridge`: Prompt formatting templates tailored for each application.
-  - One-click **Copy & Focus**: Puts formatted prompt onto clipboard and raises the application window.
-  - Import dialog for user-pasted model responses with word-count and SHA-256 integrity hashing.
-  - `MOD-14 Security`: Delimiter envelope sanitization preventing prompt injection.
+  - `MOD-02 MessageExchangeBridge`: Isolated Round 1 prompt formulation across ChatGPT, Claude, and Gemini.
+  - One-click **Copy & Focus**: Puts formatted prompt onto clipboard and raises the registered window via `WindowManager`.
+  - `ResponseImportDialog`: Preloads clipboard, calculates live character/word counts, and displays SHA-256 checksums.
+  - SQLite persistence with versioned migrations: `reasoning_sessions`, `session_prompts`, `session_responses`.
+  - Session restoration: past sessions can be reloaded and reviewed without losing accepted responses.
+  - Completion indicator: recognizes `3/3 Responses Collected — Independent Round Complete — Ready for Cross-Model Discussion`.
 - **Acceptance Gate**:
-  - Round-trip clipboard exchange verified across all three desktop applications.
-  - Strict provenance validation: every imported response tagged with timestamp and source agent.
-  - Simulated untrusted payloads safely contained within prompt boundaries.
+  - All 17 Phase 2 unit & integration tests passing.
+  - Round 1 isolation enforced: zero peer leakage in outbound prompts.
+  - Rejection of empty inputs and unconfirmed duplicate submissions.
+  - Response revisions tracked with incrementing revision numbers.
 
 ---
 
-### Phase 3: Reasoning Session & Cross-Model Debate Engine
-- **Status**: Planned (Data Models Defined in `app/models/session.py`).
+### Phase 3: Reasoning Session & Cross-Model Debate Engine (Next Milestone)
+- **Status**: Planned (Architecture & Contracts Defined).
 - **Core Capabilities**:
   - `MOD-03 ReasoningSessionManager`: Multi-round session state machine.
   - `MOD-04 IndependentReasoningEngine`: Round 1 epistemic isolation (sealed responses).

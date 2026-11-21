@@ -15,11 +15,11 @@ QWidget {
 #HeaderWidget {
     background-color: #14171f;
     border-bottom: 1px solid #232733;
-    padding: 18px 24px;
+    padding: 16px 24px;
 }
 
 #AppTitleLabel {
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
     color: #f8fafc;
     letter-spacing: 0.5px;
@@ -36,7 +36,7 @@ QWidget {
     border: 1px solid #2d3748;
     border-radius: 6px;
     padding: 6px 14px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #94a3b8;
 }
@@ -45,6 +45,36 @@ QWidget {
     background-color: #064e3b;
     border: 1px solid #059669;
     color: #34d399;
+}
+
+/* Tab Navigation */
+QTabWidget::pane {
+    border: none;
+    background-color: #0e1015;
+}
+
+QTabBar::tab {
+    background-color: #12151d;
+    border: 1px solid #1e222e;
+    border-bottom: none;
+    color: #94a3b8;
+    padding: 9px 20px;
+    font-weight: 600;
+    font-size: 12px;
+    margin-right: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+QTabBar::tab:selected {
+    background-color: #1a1e28;
+    color: #38bdf8;
+    border-bottom: 2px solid #38bdf8;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #161922;
+    color: #e2e8f0;
 }
 
 /* Global Controls Bar */
@@ -218,6 +248,27 @@ QPushButton:disabled {
     color: #475569;
 }
 
+/* Inputs & Form Elements */
+QLineEdit, QTextEdit {
+    background-color: #0d0f15;
+    border: 1px solid #232838;
+    border-radius: 6px;
+    color: #f1f5f9;
+    padding: 8px;
+}
+
+QLineEdit:focus, QTextEdit:focus {
+    border-color: #3b82f6;
+}
+
+QComboBox {
+    background-color: #161922;
+    border: 1px solid #282f42;
+    border-radius: 5px;
+    color: #e2e8f0;
+    padding: 6px 12px;
+}
+
 /* Activity Log Panel */
 #ActivityLogWidget {
     background-color: #0b0d11;
@@ -257,4 +308,3 @@ QHeaderView::section {
     padding: 6px;
     font-weight: 600;
 }
-

@@ -15,15 +15,29 @@ class ReasoningMode(str, Enum):
 
 class SessionState(str, Enum):
     """Lifecycle state of a reasoning session."""
-    DRAFT = "draft"                          # Session created, prompt drafted
-    INDEPENDENT_ROUND = "independent_round"  # Round 1: Gathering independent initial answers
-    DEBATE_ROUND = "debate_round"            # Round 2+: Cross-model critique and rebuttal
-    DEVILS_ADVOCATE = "devils_advocate"      # Stress-testing emerging consensus
-    VOTING = "voting"                        # Collecting structured ballots
-    CONSENSUS_REACHED = "consensus_reached"  # Deterministic consensus achieved
-    NO_CONSENSUS = "no_consensus"            # Maximum rounds exhausted without consensus
-    OVERRIDDEN = "overridden"                # Human decision override applied
-    TERMINATED = "terminated"                # Manually aborted by user
+    DRAFT = "draft"                          # Session created, question entered
+    ROUND_1_READY = "round_1_ready"          # Initial prompt formulated and staged
+    AWAITING_RESPONSES = "awaiting_responses"# Prompts copied, awaiting imported answers
+    ROUND_1_COMPLETE = "round_1_complete"    # All 3 required responses accepted
+    INCOMPLETE = "incomplete"                # Round halted or missing answers
+    CANCELLED = "cancelled"                  # Aborted by user
+    ERROR = "error"                          # Technical error occurred
+    # Future Phase states
+    DEBATE_ROUND = "debate_round"            # Phase 3: Cross-model critique
+    DEVILS_ADVOCATE = "devils_advocate"      # Phase 3: Adversarial stress-testing
+    VOTING = "voting"                        # Phase 4: Ballot casting
+    CONSENSUS_REACHED = "consensus_reached"  # Phase 4: Deterministic consensus
+    NO_CONSENSUS = "no_consensus"            # Phase 4: 1/1/1 split or tie
+    OVERRIDDEN = "overridden"                # Phase 4: Human override applied
+    TERMINATED = "terminated"                # Session finalized
+
+
+class AgentRoundStatus(str, Enum):
+    """Round progress status for an individual agent."""
+    PENDING = "pending"                      # Not yet copied
+    PROMPT_STAGED = "prompt_staged"          # Staged in TRIAD
+    PROMPT_COPIED = "prompt_copied"          # Copied to clipboard & window focused
+    RESPONSE_ACCEPTED = "response_accepted"  # User verified and accepted response
 
 
 class RoundType(str, Enum):
@@ -84,9 +98,14 @@ class ModelResponse:
     agent_id: str
     prompt_sent: str
     raw_response: str
+    sha256_hash: str
+    word_count: int = 0
+    char_count: int = 0
+    source_type: str = "manual_import"
+    user_confirmed: bool = True
+    revision_number: int = 1
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     prompt_hash: Optional[str] = None
-    word_count: int = 0
     claims: List[StructuredClaim] = field(default_factory=list)
     is_sealed: bool = True  # Round 1 answers are sealed until all 3 participants submit
 
@@ -148,6 +167,18 @@ class DisagreementPoint:
 
 
 @dataclass
+class OutboundPrompt:
+    """A prompt staged for clipboard transfer to an AI participant."""
+    prompt_id: str
+    session_id: str
+    round_number: int
+    agent_id: str
+    prompt_text: str
+    staged_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    copied_at: Optional[str] = None
+
+
+@dataclass
 class ReasoningRound:
     """A discrete round within a reasoning session."""
     round_number: int
@@ -155,6 +186,7 @@ class ReasoningRound:
     prompt_template_name: str
     started_at: str
     completed_at: Optional[str] = None
+    prompts: Dict[str, OutboundPrompt] = field(default_factory=dict)
     responses: Dict[str, ModelResponse] = field(default_factory=dict)
     ballots: Dict[str, ModelBallot] = field(default_factory=dict)
     is_sealed: bool = False
@@ -165,17 +197,14 @@ class ReasoningSession:
     """Top-level reasoning session entity."""
     session_id: str
     title: str
-    initial_prompt: str
-    mode: ReasoningMode
-    max_rounds: int
+    initial_question: str
+    mode: ReasoningMode = ReasoningMode.QUICK_CONSENSUS
+    max_rounds: int = 3
     state: SessionState = SessionState.DRAFT
-    current_round: int = 0
+    current_round: int = 1
     participants: List[str] = field(default_factory=lambda: ["chatgpt", "claude", "gemini"])
-    devils_advocate_enabled: bool = True
-    devils_advocate_agent: Optional[str] = None
-    proposals: List[CandidateProposal] = field(default_factory=list)
-    rounds: List[ReasoningRound] = field(default_factory=list)
-    disagreements: List[DisagreementPoint] = field(default_factory=list)
-    final_decision: Optional[ConsensusDecision] = None
+    agent_statuses: Dict[str, AgentRoundStatus] = field(default_factory=dict)
+    prompts: Dict[str, OutboundPrompt] = field(default_factory=dict)
+    responses: Dict[str, ModelResponse] = field(default_factory=dict)
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())

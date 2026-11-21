@@ -67,3 +67,4 @@ For future roadmap phases (Phase 2B / Phase 3), TRIAD will evaluate **Windows UI
 - UIA is Microsoft's supported accessibility framework designed for screen readers and assistive technology.
 - If enabled with explicit user authorization, UIA can detect the accessibility input element (`ControlType.Edit`) and document root (`ControlType.Document`) to streamline prompt insertion.
 - Any UIA automation will remain opt-in, non-invasive, and maintain the human operator as the final arbiter.
+
